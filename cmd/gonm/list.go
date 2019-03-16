@@ -15,7 +15,7 @@ var (
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "list smart TVs in the network",
+	Short:   "list network interfaces",
 	Run: func(cmd *cobra.Command, args []string) {
 		//allInterfaces := [][]string{}
 		table := tablewriter.NewWriter(os.Stdout)
