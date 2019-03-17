@@ -1,65 +1,20 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"time"
 
+	gauge "github.com/nirmoy/gonm/pkg/widgets"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	"github.com/spf13/cobra"
-	"github.com/vishvananda/netlink"
 )
 
 var (
 	sparkLingLen = 80
 )
-
-func initIfaceGauge(ifName string, rect []int) (*widgets.SparklineGroup, error) {
-	sl := widgets.NewSparkline()
-	sl.Data = []float64{}
-	sl.LineColor = ui.ColorCyan
-	sl.TitleStyle.Fg = ui.ColorWhite
-
-	sl2 := widgets.NewSparkline()
-	sl2.Data = []float64{}
-	sl2.TitleStyle.Fg = ui.ColorWhite
-	sl2.LineColor = ui.ColorRed
-
-	slg := widgets.NewSparklineGroup(sl, sl2)
-	slg.Title = ifName
-	slg.SetRect(rect[0], rect[1], rect[2], rect[3])
-
-	go func() {
-		link, _ := netlink.LinkByName(ifName)
-		prevRxBytes := link.Attrs().Statistics.RxBytes
-		prevTxBytes := link.Attrs().Statistics.TxBytes
-		for {
-			link, _ := netlink.LinkByName(ifName)
-			currRxBytes := link.Attrs().Statistics.RxBytes
-			currTxBytes := link.Attrs().Statistics.TxBytes
-			rxBytes := currRxBytes - prevRxBytes
-			txBytes := currTxBytes - prevTxBytes
-
-			sl.Data = append(sl.Data, float64(rxBytes))
-			sl2.Data = append(sl2.Data, float64(txBytes))
-			if len(sl.Data) > sparkLingLen {
-				sl.Data = sl.Data[1:]
-				sl2.Data = sl2.Data[1:]
-			}
-
-			slg.Sparklines[0].Title = fmt.Sprintf(" Rx throughput: %v %v", rxBytes, "Bytes/Sec")
-			slg.Sparklines[1].Title = fmt.Sprintf(" Tx throughput: %v %v", txBytes, "Bytes/Sec")
-			time.Sleep(1 * time.Second)
-			prevRxBytes = link.Attrs().Statistics.RxBytes
-			prevTxBytes = link.Attrs().Statistics.TxBytes
-
-		}
-
-	}()
-	return slg, nil
-}
 
 var topCmd = &cobra.Command{
 	Use:   "top",
@@ -67,16 +22,14 @@ var topCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var allGauge []ui.Drawable
 		var allPane []string
-		var index int
 
 		ifaces, _ := net.Interfaces()
 
 		for _, iface := range ifaces {
-			wg, _ := initIfaceGauge(iface.Name, []int{0, 5, 80, 15})
+			wg, _ := gauge.InitIfaceGauge(iface.Name, []int{0, 5, sparkLingLen, 15})
 
 			allGauge = append(allGauge, wg)
 			allPane = append(allPane, iface.Name)
-			index++
 		}
 
 		if err := ui.Init(); err != nil {
