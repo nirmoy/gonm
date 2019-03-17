@@ -17,3 +17,5 @@ gonm list
 | virbr0          | up|broadcast|multicast | 192.168.122.1/24                           |
 +-----------------+------------------------+--------------------------------------------+
 ```
+## gonm top
+![picture](https://i.ibb.co/NVBx0WD/Screenshot-from-2019-03-17-15-01-33.png)
