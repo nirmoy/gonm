@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"net"
 	"os"
+
+	"github.com/nirmoy/gonm/pkg/netutils"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"github.com/vishvananda/netlink"
 )
 
 var (
@@ -23,30 +23,9 @@ var listCmd = &cobra.Command{
 		table.SetHeaderColor(tablewriter.Colors{tablewriter.FgHiRedColor, tablewriter.Bold, tablewriter.BgWhiteColor},
 			tablewriter.Colors{tablewriter.BgCyanColor, tablewriter.FgWhiteColor},
 			tablewriter.Colors{tablewriter.BgCyanColor, tablewriter.FgWhiteColor})
-		ifaces, _ := net.Interfaces()
-
-		for _, iface := range ifaces {
-			firstElem := true
-			link, _ := netlink.LinkByName(iface.Name)
-			addrs, _ := netlink.AddrList(link, netlink.FAMILY_V4)
-
-			for _, addr := range addrs {
-				if firstElem {
-					firstElem = false
-					table.Append([]string{iface.Name, iface.Flags.String(), addr.IPNet.String()})
-				} else {
-					table.Append([]string{"", "", addr.IPNet.String()})
-				}
-			}
-			addrs, _ = netlink.AddrList(link, netlink.FAMILY_V6)
-			for _, addr := range addrs {
-				if firstElem {
-					firstElem = false
-					table.Append([]string{iface.Name, iface.Flags.String(), addr.IPNet.String()})
-				} else {
-					table.Append([]string{"", "", addr.IPNet.String()})
-				}
-			}
+		addrs := netutils.GetAddrs()
+		for _, addr := range addrs {
+			table.Append(addr)
 		}
 
 		table.Render()
