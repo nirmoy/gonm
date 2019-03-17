@@ -12,6 +12,10 @@ import (
 	"github.com/vishvananda/netlink"
 )
 
+var (
+	sparkLingLen = 80
+)
+
 func initIfaceGauge(ifName string, rect []int) (*widgets.SparklineGroup, error) {
 	sl := widgets.NewSparkline()
 	sl.Data = []float64{}
@@ -40,6 +44,10 @@ func initIfaceGauge(ifName string, rect []int) (*widgets.SparklineGroup, error) 
 
 			sl.Data = append(sl.Data, float64(rxBytes))
 			sl2.Data = append(sl2.Data, float64(txBytes))
+			if len(sl.Data) > sparkLingLen {
+				sl.Data = sl.Data[1:]
+				sl2.Data = sl2.Data[1:]
+			}
 
 			slg.Sparklines[0].Title = fmt.Sprintf(" Rx throughput: %v %v", rxBytes, "Bytes/Sec")
 			slg.Sparklines[1].Title = fmt.Sprintf(" Tx throughput: %v %v", txBytes, "Bytes/Sec")
@@ -78,12 +86,12 @@ var topCmd = &cobra.Command{
 
 		header := widgets.NewParagraph()
 		header.Text = "Press q to quit, Press h or l to switch tabs"
-		header.SetRect(0, 0, 50, 1)
+		header.SetRect(0, 0, sparkLingLen, 1)
 		header.Border = false
 		header.TextStyle.Bg = ui.ColorBlue
 
 		tabpane := widgets.NewTabPane(allPane...)
-		tabpane.SetRect(0, 1, 80, 4)
+		tabpane.SetRect(0, 1, sparkLingLen, 4)
 		tabpane.Border = true
 		ui.Render(tabpane)
 		uiEvents := ui.PollEvents()
