@@ -1,6 +1,11 @@
 # gonm
 Network manager written in Golang
 
+## get started
+```
+go get github.com/nirmoy/gonm; $GOPATH/bin/gonm list
+```
+
 ## gonm list 
 ```
 gonm list 
